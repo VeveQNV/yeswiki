@@ -2,6 +2,10 @@
 
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\ThemeManager;
+use AutoUpdate\AutoUpdate;
+use AutoUpdate\Messages;
+use AutoUpdate\Controller;
 
 /*
  * This handler is called from /tools/autoupdate/Viewupdate.php only when upgrading from cercopitheque to doryphore.
@@ -33,6 +37,18 @@ class WelcomeDoryphoreHandler extends YesWikiHandler
             return $this->getService(Performer::class)->run('show', 'handler', []);
         }
 
+        // check presence of theme margot
+        $themeManager = $this->getService(ThemeManager::class) ;
+        if (!$themeManager->loadTheme()) {
+            // upgrade margot
+            $get = $_GET;
+            $get['upgrade'] = THEME_PAR_DEFAUT;
+            $autoUpdate = new AutoUpdate($this->wiki);
+            $messages = new Messages();
+            $controller = new Controller($autoUpdate, $messages, $this->wiki);
+            $resUpgradeMargot = $controller->run($get);
+        }
+
         // finished rendering of autoupdate
         $output = '<h1>Welcome on Doryphore</h1>'."\n";
         // $output .= $message;
@@ -40,6 +56,7 @@ class WelcomeDoryphoreHandler extends YesWikiHandler
             'messages' => $data['messages'],
             'baseUrl' => $data['baseURL'],
         ]);
+        $output .= (!empty($resUpgradeMargot)) ? $resUpgradeMargot :'';
         $output = $this->wiki->Header() . $output ;
         $output .= $this->wiki->Footer();
         return $output;
