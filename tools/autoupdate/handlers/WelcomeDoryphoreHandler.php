@@ -47,6 +47,8 @@ class WelcomeDoryphoreHandler extends YesWikiHandler
             $messages = new Messages();
             $controller = new Controller($autoUpdate, $messages, $this->wiki);
             $resUpgradeMargot = $controller->run($get);
+            $resUpgradeMargot = (!empty($resUpgradeMargot)) ? '<hr><h3>'.THEME_PAR_DEFAUT.' update</h3>'."\n" .$resUpgradeMargot : null ;
+            ;
         }
 
         // finished rendering of autoupdate
