@@ -1,0 +1,131 @@
+
+<script>
+
+var gFromAction = JSON.parse ('{{ javascript_data | json_encode | raw }}');
+ 
+</script>
+
+{{ include_css ('styles/vendor/leaflet/leaflet.css') }}
+{{ include_css('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css') }}
+{{ include_css('tools/geolocation/styles/geolocation.css') }}
+{{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
+{{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
+{{ include_javascript('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js') }}
+{{ include_javascript('tools/geolocation/javascripts/position.js') }}
+{{ include_javascript('tools/geolocation/javascripts/geolocation.js') }}
+
+<div id="geolocation_container" class='{{ class_container }}' >
+	<h2>Ma position</h2>
+	{% block navigation %}	
+	<div id="geolocation_navigation">
+		<button data-target="geolocation_user" class="geolocation-nav {{ class_button }}" data-placement="bottom" title="Cliquez pour sélectionner la position enregistrée dans votre profil">Ma position de profil
+		</button>
+	   	<button data-target="geolocation_browser" type="button" class="geolocation-nav {{ class_button }}" data-placement="bottom" title="Cliquez pour détecter automatiquement votre position actuelle">Ma position détectée
+		</button>
+	   	<button data-target="geolocation_address" type="button" class="geolocation-nav {{ class_button }}" data-placement="bottom" title="Cliquez pour pouvoir sélectionner une position quelconque à partir de son adresse postale">Une adresse
+		</button>
+	   	<button data-target="geolocation_coordinates" type="button" class="geolocation-nav {{ class_button }}" data-placement="bottom" title="Cliquez pour pouvoir sélectionner une position quelconque à partir de sa latitude et sa longitude">Des coordonnées 
+		</button>
+	</div>	
+	<hr>
+	{% endblock %}
+	
+	{% block content %}
+	<div id="geolocation_content" class="jeu-flex-grid">
+		<div id="geolocation_parameters">	
+			<div id="geolocation_user" class="geolocation_parameters" >
+			</div>
+			<div id="geolocation_browser" class="geolocation_parameters" >
+			</div>
+			<div id="geolocation_address" class="geolocation_parameters" >
+				<form>
+					<div id="geolocation_rue_container" class="control-group form-group input-text input text">
+						<label class="control-label">Adresse</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" autocomplete="on" id="geolocation_rue" name="adresse" class="form-control input-xxlarge" maxlength="" size="" placeholder="Adresse">
+							</div>
+						</div>
+					</div>
+					<div id="geolocation_code_postal_container" class="control-group form-group input-text input text">
+						<label class="control-label">Code Postal</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" autocomplete="off" id="geolocation_code_postal" name="codepostal" class="form-control input-xxlarge" maxlength="" size="" placeholder="Code postal">
+							</div>
+						</div>
+					</div>
+					<div id="geolocation_ville_container" class="control-group form-group input-text input text">
+						<label class="control-label">Ville</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" autocomplete="off" id="geolocation_ville" name="ville" class="form-control input-xxlarge" maxlength="" size="" placeholder="Ville">
+							</div>
+						</div>
+					</div>
+					<div id="geolocation_departement_container" class="control-group form-group input-text input text">
+						<label class="control-label">Département</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" autocomplete="off" id="geolocation_departement" name="departement" class="form-control input-xxlarge" maxlength="" size="" placeholder="Département">
+							</div>
+						</div>
+					</div>
+					<div id="geolocation_ville_container" class="control-group form-group input-text input text">
+						<label class="control-label">Région</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" autocomplete="off" id="geolocation_region" name="region" class="form-control input-xxlarge" maxlength="" size="" placeholder="Région">
+							</div>
+						</div>
+					</div>
+					<div id="geolocation_pays_container" class="control-group form-group input-text input text">
+						<label class="control-label">Pays</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" autocomplete="off" id="geolocation_pays" name="pays" class="form-control input-xxlarge" maxlength="" size="" placeholder="Pays">
+							</div>
+						</div>
+					</div>
+				</form>
+				<div id="geolocation_geolocate_address_container">
+					<button id="geolocation_geolocate_address" class="{{ class_button }}"><i class="{{ icon_geolocation }}"></i>&nbsp;Géolocaliser</button>
+				</div>
+			</div>
+			<div id="geolocation_coordinates" class="geolocation_parameters" >
+				<form id="geolocation_form" method="POST">
+					<div id="geolocation_latitude_container" class="control-group form-group input-text input text geolocation-coordinate">
+						<label class="control-label">Latitude</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" id="geolocation_latitude" name="latitude" class="form-control input-xxlarge" maxlength="" size="" placeholder="Latitude">
+							</div>
+						</div>
+					</div>
+					<div id="geolocation_longitude_container" class="control-group form-group input-text input text geolocation-coordinate">
+						<label class="control-label">Longitude</label>
+						<div class="controls">
+							<div class="input-group">
+								<input type="text" value="" id="geolocation_longitude" name="longitude" class="form-control input-xxlarge" maxlength="" size="" placeholder="Longitude">
+							</div>
+						</div>
+					</div>
+					<input type="hidden" value="" id="geolocation_mode" name="mode" />
+					<input type="hidden" value="" id="geolocation_mode_parameters" name="parameters" />
+					<input type="hidden" value="" id="geolocation_geodata" name="geodata" />
+				</form>	
+				<div id="geolocation_geolocate_coordinates_container">
+					<button id="geolocation_geolocate_coordinates" class="{{ class_button }}"><i class="{{ icon_geolocation }}"></i>&nbsp;Géolocaliser</button>
+				</div>
+			</div>
+		</div>
+		<div id="geolocation_map">
+		</div>
+	</div>
+	{% endblock %}
+	<hr>
+	<div id="geolocation_validate_container"><button id="geolocation_validate" class="{{ class_button }}"><i class="{{ icon_validate }}"></i>&nbsp;Enregistrer</button></div>
+	
+</div>
+
+

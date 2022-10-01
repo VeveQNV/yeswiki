@@ -1,0 +1,16 @@
+{{ include_css('tools/geolocation/styles/geolocation.css') }}
+
+<form id="geolocation_range_form" class='{{ class_container }}' method="post">
+	<div id="geolocation_range_container">
+		<div id="geolocation_range_inputs">
+			<span id="geolocation_range_title" >Rayon kilométrique </span>
+			<input id="geolocation_range" class="geolocation-range" name="range" placeholder="" value='{% if range != "-1" %}{{ range }}{% endif %}' />
+			<span id="geolocation_range_km" > km</span><br>
+		</div>
+		<div id="geolocation_range_buttons">
+			<button type="button" id="geolocation_range_unlimited" class='{{ class_button }}' onclick='$("#geolocation_range").val ("")' ><i class='{{ icon_nolimit }}'></i>&nbsp;Pas de rayon</button>
+			<button type="submit" id="geolocation_range_validate" class='{{ class_button }}'><i class='{{ icon_validate }}'></i>&nbsp;Valider</button>
+		</div>
+	</div>
+</form>
+

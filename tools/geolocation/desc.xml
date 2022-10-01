@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="yes-wiki-geolocation" version="0.1" active="1">
+  <author>Yves Gufflet/author>
+  <label>Geolocation</label>
+  <desc>Geolocation facilities</desc>
+</plugin>

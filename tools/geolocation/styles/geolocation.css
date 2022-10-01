@@ -1,0 +1,275 @@
+/* MODIFY RANGE */
+
+#geolocation_range_form
+{
+	display:flex;
+	justify-content:center;
+}
+
+#geolocation_range_form > *
+{
+	text-align:center;
+}
+
+#geolocation_range_inputs
+{
+	margin-bottom:20px;
+}
+
+#geolocation_range_title,
+#geolocation_range,
+#geolocation_range_unlimited,
+{
+	display:inline-block;
+}
+
+#geolocation_range
+{
+	margin : 0px 10px 0px 10px;
+	width:50px;
+}
+
+#geolocation_range_title,
+#geolocation_range_km
+{
+	font-weight:bold;
+}
+
+#geolocation_range_form button
+{
+
+	display:inline-block;
+	margin : 10px 10px 10px 10px;
+}
+
+
+/* POSITION FORM */
+
+#geolocation_container
+{
+	position:relative;
+	text-align:center;
+	min-width:200px;
+}
+
+/* NAVIGATION */
+
+#geolocation_navigation
+{
+	display : flex;
+	flex-direction:row;
+	flex-wrap:wrap;
+	text-align: center;
+	justify-content:space-around;
+}
+
+#geolocation_navigation button
+{
+	display:flex;
+	margin:10px;
+	justify-content:center;
+	flex : 1 1 0;
+	width : 0;
+	text-align:center;
+	min-width : max-content;
+	min-width : moz-max-content;
+}
+
+.geolocation-nav-selected
+{
+	background:var(--success-color) !important;
+}
+
+
+/*
+#geolocation_content
+{
+	position:absolute;
+	text-align:center;
+	top:0px;
+	left:0px;
+	width:50%;
+	height:100%;
+	z-index:10;
+}
+*/
+
+/* GEOLOCATION PARAMETERS & MAP*/
+
+/* From bazarcarto.css
+.leaflet-control-container .leaflet-bar.leaflet-control {
+  border:none;
+  margin-top: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.leaflet-control-container .leaflet-bar.leaflet-control a {
+  font-size: 18px !important;
+  font-weight: normal;
+  text-indent: 0;
+}
+.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon {
+  background-image: none;
+}
+.leaflet-control-container .leaflet-control-zoom-fullscreen.fullscreen-icon:before {
+  content: "⇱";
+  font-weight: 600;
+}
+*/
+
+.leaflet-control-zoom
+{
+	width:30px;
+}
+
+.leaflet-control-zoom-fullscreen
+{
+	line-height:30px;
+}
+
+.leaflet-control-zoom-fullscreen i
+{
+	font-size : 20px;
+	line-height:30px;
+}
+
+#geolocation_parameters
+{
+	width:300px;
+}
+
+.control-label
+{
+	left:0px !important;
+}
+
+#geolocation_map
+{
+	position:relative;
+	z-index:0;
+	flex:auto;
+	min-width:300px;
+	height:auto;
+	min-height:300px;
+	margin:20px;
+	display:flex;
+}
+
+#geolocation_browser
+{
+	padding:20px;
+	min-height:300px;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	vertical-align: middle;
+	justify-content: center;
+}
+
+#geolocation_user
+{
+	padding:20px;
+	min-height:300px;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	vertical-align: middle;
+	justify-content: center;
+}
+
+#geolocation_address form
+{
+	display:flex;
+	justify-content:center;
+	flex-direction : column;
+}
+
+#geolocation_address .control-group
+{
+	margin:10px 10px 10px 10px !important;
+}
+
+#geolocation_rue_container
+{
+	flex: 1 1 auto;
+}
+
+#geolocation_code_postal_container
+{
+	flex: 1 1 auto;	
+}
+
+#geolocation_ville_container
+{
+	flex: 1 1 auto;
+	min-width : 200px !important;
+}
+
+#geolocation_pays_container
+{
+	flex: 1 1 auto;
+}
+
+.typeahead.dropdown-menu
+{
+	overflow: scroll;
+	max-height: 200px;
+}
+
+#geolocation_address button
+{
+	margin:12px 0px 10px 0px !important;
+	width:100%;
+}
+#geolocation_geolocate_address_container
+{
+	flex: 1 1 auto;
+}
+
+
+/* COORDINATES*/
+
+#geolocation_coordinates form
+{
+	display:flex;
+	flex-wrap:wrap;
+	justify-content:center;
+	text-align:center;
+}
+
+#geolocation_coordinates .control-group
+{
+	margin:10px 10px 10px 10px !important;
+}
+
+#geolocation_coordinates button
+{
+	margin:12px 0px 10px 0px !important;
+	width:100%;
+}
+
+#geolocation_latitude_container
+{
+	flex: 1 1 auto;
+}
+
+#geolocation_longitude_container
+{
+	flex: 1 1 auto;
+}
+
+#geolocation_geolocate_coordinates_container
+{
+	flex: 1 1 auto;
+}
+
+/* VALIDATION*/
+
+#geolocation_validate
+{
+	width:100%;
+}
+
+
+
+
+

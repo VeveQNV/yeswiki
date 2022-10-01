@@ -1,0 +1,74 @@
+{% if params.showgeolocation %}
+
+	{% if (params.champ and params.champ == "geolocation") %}
+		{% set vPositionText = _t("GEOLOCATION_NEAREST_TO_FAREST") %}
+	{% else %}
+		{% set vPositionText = _t("GEOLOCATION_FROM_MY_POSITION") %}
+	{% endif %}
+
+	{% if params.range == -1 %}
+		{% set vRangeText = _t("GEOLOCATION_IN_AN_UNLIMITED_RANGE") %}
+	{% else %}
+		{% set vRangeText = _t("GEOLOCATION_IN_A_RANGE_OF") ~ " " ~ params.range ~ " " ~ _t("GEOLOCATION_KILOMETERS") %}	
+	{% endif %}
+	
+	{% set vShowPosition = (params.champ and params.champ == "geolocation") or params.modifyposition %}
+	{% set vShowRange = params.range != -1 or params.modifyrange %}
+
+	{% if (vShowPosition or vShowRange) %}
+
+		{{ include_css('tools/bazar/presentation/styles/geolocation.css') }}
+
+		{% block geolocation_controller %}
+		<div id="geolocation_controller" class="geolocation-controller">
+
+			{% if (vShowPosition) %}
+				{% if params.modifyposition %}
+				
+			<a id="geolocation_position_modal_button" href="?GeolocalisatioN/iframe&output=position" class="{{ params.class_geolocation_btn ~ ' geolocation-position-modify modalbox'}}" data-iframe="1" data-size="geolocation-modal-position-size" data-modal-dialog-class="geolocation-position-modal-dialog" title="{{_t('GEOLOCATION_MODIFY_MY_POSITION')}}" >
+				<label>
+					<i class="fas fa-crosshairs"></i>			
+					{{ vPositionText }}				
+				</label></a>						
+				{% else %}
+					<span class="geolocation_text">
+					{{ vPositionText }}								
+					</span>
+				{% endif %}
+			{% endif %}
+			
+			{% if (vShowRange) %}			
+				{% if params.modifyrange %}				
+				<a id="geolocation_range_modal_button" href="?GeolocalisatioN/iframe&output=range" class="{{ params.class_geolocation_btn ~ ' geolocation-range-modify modalbox'}}" data-modal-dialog-class="geolocation-range-modal-dialog" data-size="geolocation-modal-range-size" data-iframe="1" title="{{_t('GEOLOCATION_MODIFY_RANGE')}}" >
+					<label>
+						<i class="far fa-circle"></i>	
+						{{ vRangeText }}							
+					</label>
+				</a>						
+				{% else %}
+					<span class="geolocation_text">
+					{{ vRangeText }}								
+					</span>
+				{% endif %}			
+			{% endif %}			
+			{% if params.togglegeolocateds == "true" %}
+			<label class="btn" style="color:black;">
+				<input type="checkbox" v-model="geolocateds"></input>
+				<span>{{ _t("GEOLOCATION_HIDE_NOT_GEOLOCATEDS") }}</span>
+			</label>
+			{% endif %}
+			{% if params.togglepasseds == "true" %}
+			<label class="btn" style="color:black;">
+				<input type="checkbox" v-model="passeds"></input>
+				<span>{{ _t("GEOLOCATION_HIDE_PASSEDS") }}</span>
+			</label>
+			{% endif %}
+			
+		</div>
+		{% endblock %}
+		
+	{% endif %}	
+	
+{% endif %}
+
+			

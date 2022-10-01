@@ -399,4 +399,8 @@ return [
     // services/EntryManager.php
     'BAZ_CORRESPONDANCE_ERROR' => 'action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
     'BAZ_CORRESPONDANCE_ERROR2' => "action bazarliste : le paramètre correspondance est mal rempli.\nIl doit être de la forme correspondance=\"identifiant_1=identifiant_2\" ou correspondance=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
+     'GEOLOCATION_NOT_GEOLOCATED' => "non géolocalisé",
+     "GEOLOCATION_HIDE_NOT_GEOLOCATEDS" => "Masquer les non géolocalisés",
+     "GEOLOCATION_HIDE_PASSEDS" => "Masquer les révolus"
+      
 ];

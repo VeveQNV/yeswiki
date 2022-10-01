@@ -5,7 +5,7 @@ import SpinnerLoader from './SpinnerLoader.js'
 // allow usage of wiki in templates
 Vue.prototype.wiki = wiki;
 
-Vue.component('BazarMap', {
+wiki.vuejs.components.bazarMap = Vue.component('BazarMap', {
   props: [ 'params' ],
   components: {
     'l-map': window.Vue2Leaflet.LMap,
@@ -15,12 +15,16 @@ Vue.component('BazarMap', {
     'l-marker-cluster': LeafletMarkerCluster,
     'spinner-loader': SpinnerLoader
   },
+  mounted ()
+  {
+		wiki.vuejs.register ($(this.$el), this);		
+  },
   data() {
-    return {
-      selectedEntry: null,
-      center: null,
-      bounds: null,
-      layers: {}
+    return {		
+    	selectedEntry: null,
+      	center: null,
+      	bounds: null,
+      	layers: {}
     }
   },
   computed: {
@@ -29,9 +33,10 @@ Vue.component('BazarMap', {
     },
     map() {
       return this.$refs.map ? this.$refs.map.mapObject : null
-    },
+    },    
     mapOptions() {
       return {
+      	maxZoom : this.params.maxzoom,
         scrollWheelZoom: this.params.zoom_molette,
         zoomControl: this.params.navigation,
         fullscreenControl: this.params.fullscreen,
@@ -43,10 +48,21 @@ Vue.component('BazarMap', {
           forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
         },
         maxZoom: 18
-      }
-    }
+      }      
+    }    
   },
   methods: {
+	popupOptions : function ()
+    {
+      return {
+      	width : "300px",//this.params.width||"auto",
+     	height : "300px"//this.params.height||"auto"
+      }
+    },
+    getMap : function ()
+    { 
+		return this.$refs.map ? this.$refs.map.mapObject : null;	
+    },
     updateBounds() {
       if (!this.$refs.map) return
       this.bounds = this.map.getBounds()        
@@ -112,6 +128,7 @@ Vue.component('BazarMap', {
         let tagName =  isLink ? 'a' : 'div';
         let url = entry.url + (this.isModalDisplay() ? '/iframe':'');
         let modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1"' : '';
+
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
@@ -234,7 +251,7 @@ Vue.component('BazarMap', {
         : $(this.$el).find('.popupentry-container > div').first().html();
       if (entry.marker.popup == undefined){
         if (renderedHtml != undefined && renderedHtml.length != 0){
-          entry.marker.bindPopup(renderedHtml,{keepInView:true}).openPopup();
+          entry.marker.bindPopup(renderedHtml,{maxWidth:"500px",width:"500px"}).openPopup();
         }
       } else {
         entry.marker.popup.openPopup();
@@ -285,8 +302,8 @@ Vue.component('BazarMap', {
     <div class="bazar-map-container" :style="{height: params.height}"
         :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
       
-      <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
-             :options="mapOptions"
+      <l-map v-if="center" ref="map" :zoom="params.zoom" :maxZoom="params.maxzoom" :center="center"
+             :options="mapOptions" :popupOptions="popupOptions"
              @update:center="updateBounds()" @ready="updateBounds(); createTileLayers()"
              @click="selectedEntry = null">
         <l-marker-cluster ref="cluster" ></l-marker-cluster>

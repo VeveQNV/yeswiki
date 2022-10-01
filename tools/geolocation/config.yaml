@@ -1,0 +1,12 @@
+parameters:
+  geolocation:
+    my_param: 'this is a test param defined in tools/geolocation/config.yaml. It can be ovewritten in wakka.config.php'
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Geolocation\Service\:
+    resource: 'services/*'
+

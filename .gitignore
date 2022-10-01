@@ -50,6 +50,8 @@ tools/*
 !tools/contact/*
 !tools/despam
 !tools/despam/*
+!tools/geolocation
+!tools/geolocation/*
 !tools/hashcash
 !tools/hashcash/*
 !tools/lang

@@ -1,0 +1,58 @@
+{{ include_css('tools/geolocation/styles/geolocation.css') }}
+
+<span class="geolocation-address">
+	{% if street %}
+	<span class="geolocation-street">
+		{{ street }}<br>
+	</span>
+	{% endif %}
+	{% if street1 %}
+	<span class="geolocation-street1">
+		{{ street1 }}<br>
+	</span>
+	{% endif %}	
+	{% if street2 %}
+	<span class="geolocation-street2">
+		{{ street2 }}<br>
+	</span>
+	{% endif %}	
+	{% if postal_code %}
+	<span class="geolocation-postalcode">
+		{{ postalcode }}
+	</span>
+	{% endif %}
+	{% if city %}
+	<span class="geolocation-city">
+		{{ city }}<br>
+	</span>
+	{% endif %}		
+	{% if county %}
+	<span class="geolocation-county">
+		{{ county }}<br>
+	</span>
+	{% endif %}		
+	{% if state %}
+	<span class="geolocation-state">
+		{{ state }}<br>
+	</span>
+	{% endif %}		
+	{% if country %}
+	<span class="geolocation-country">
+		{{ country }}<br>
+	</span>
+	{% endif %}	
+	{% if coordinates and coordinates == "true" %}
+		<span class="geolocation-coordinates">
+		{% if latitude %}
+			<span class="geolocation-latitude">
+					Latitude = {{ latitude }}<br>
+			</span>
+		{% endif %}
+		{% if longitude %}
+			<span class="geolocation-longitude">
+					Latitude = {{ longitude }}<br>
+			</span>
+		{% endif %}		
+	{% endif %}			
+</span>
+
