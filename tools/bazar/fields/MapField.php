@@ -16,23 +16,38 @@ class MapField extends BazarField
     protected const FIELD_LATITUDE_FIELD = 1;
     protected const FIELD_LONGITUDE_FIELD = 2;
     protected const FIELD_AUTOCOMPLETE_POSTALCODE = 4;
-    protected const FIELD_AUTOCOMPLETE_TOWN = 5;
+    protected const FIELD_AUTOCOMPLETE_CITY = 5;
+    protected const FIELD_AUTOCOMPLETE_COUNTY = 6;
+    protected const FIELD_AUTOCOMPLETE_STATE = 7;
+    protected const FIELD_AUTOCOMPLETE_COUNTRY = 9;
 
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
+		$this->geodataField = "bf_geodata";
+
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
-        $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
-            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]).','.trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
+        $this->autocomplete =
+        [
+        	"street" => "bf_adresse",
+        	"street1" => "bf_adresse1",
+        	"street2" => "bf_adresse2",
+        	"postalCode" => trim ($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]??""),
+	 		"city" => trim ($values[self::FIELD_AUTOCOMPLETE_CITY]??""),
+	  		"county" => trim ($values[self::FIELD_AUTOCOMPLETE_COUNTY]??""),
+	 		"state" => trim ($values[self::FIELD_AUTOCOMPLETE_STATE]??""),
+  			"country" => trim ($values[self::FIELD_AUTOCOMPLETE_COUNTRY]??"")
+  		];
+
         $this->propertyName = 'geolocation';
         $this->label = $this->propertyName;
     }
 
     protected function getValue($entry)
     {
-        $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+        $value = $entry[$this->propertyName] ?? (isset ($_REQUEST[$this->propertyName])?$_REQUEST[$this->propertyName]:[]) ?? $this->default;
 
         // backward compatibility with former `carte_google` propertyName
         if (empty($value)) {
@@ -49,226 +64,127 @@ class MapField extends BazarField
             } elseif (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
                 $value = [
                     $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                    $this->getLongitudeField()=> $entry[$this->getLongitudeField()]
+                    $this->getLongitudeField()=> $entry[$this->getLongitudeField()],
+                    "bf_geodata"=> (!empty($entry[$this->geodataField])?$entry[$this->geodataField]:null)
                 ];
             }
         }
         return $value;
     }
 
-    protected function renderInput($entry)
-    {
-        $value = $this->getValue($entry);
-
-        if (!empty($this->autocomplete)) {
-            $autocompleteArray = explode(',', $this->autocomplete);
-            $js = '$(document).ready(function () {
-                $("input[name=\''.$autocompleteArray[0].'\'],input[name=\''.$autocompleteArray[1].'\']").attr("autocomplete", "off");
-                var $inputcp = $("input[name=\''.$autocompleteArray[0].'\']");
-                $inputcp.typeahead({
-                  items: \'all\',
-                  source: function(input, callback) {
-                    var result = [];
-                    if (input.length === 5) {
-                      $.get("https://geo.api.gouv.fr/communes?codePostal="+input).done(function( data ) {
-                        if (data.length > 0) {
-                          $.each(data, function (index, value) {
-                            result[index] = {id: value.codesPostaux[0], name: value.codesPostaux[0]+" "+value.nom, ville: value.nom}
-                          });
-                        } else {
-                          result[0] = {id: input, name: _t(\'BAZ_POSTAL_CODE_NOT_FOUND\',{input:input})};
-                        }
-                        callback(result);
-                      });
-                    } else {
-                      result[0] = {id: input, name: _t(\'BAZ_POSTAL_CODE_HINT\')};
-                      callback(result);
-                    }
-                  },
-                  autoSelect: false,
-                  afterSelect: function(item) {
-                    $inputcp.val(item.id);
-                    $inputville.val(item.ville);
-                    $(".btn-geolocate-address").click();
-                  }
-                });
-                var $inputville = $("input[name=\''.$autocompleteArray[1].'\']");
-                $inputville.typeahead({
-                  items: 12,
-                  minLength: 3,
-                  source: function(input, callback) {
-                    var result = [];
-                    if (input.length >= 3) {
-                      $.get("https://geo.api.gouv.fr/communes?nom="+input).done(function( data ) {
-                        if (data.length > 0) {
-                          $.each(data, function (index, value) {
-                            result[index] = {id: value.codesPostaux[0], name: value.nom+" "+value.codesPostaux[0], ville: value.nom}
-                          });
-                        } else {
-                          result[0] = {id: input, name: _t(\'BAZ_TOWN_NOT_FOUND\',{input:input})};
-                        }
-                        callback(result);
-                      });
-                    } else {
-                      result[0] = {id: input, name: _t(\'BAZ_TOWN_HINT\')};
-                      callback(result);
-                    }
-                  },
-                  autoSelect: false,
-                  afterSelect: function(item) {
-                    $inputcp.val(item.id);
-                    $inputville.val(item.ville);
-                    $(".btn-geolocate-address").click();
-                  }
-                });
-              });';
-            $GLOBALS['wiki']->AddJavascript($js);
-        }
-
+    protected function renderInput($pEntry, $pOptions = null)
+    {    
+        $vValue = $this->getValue($pEntry);
+		$vAutocomplete = $this->autocomplete;
+	   	
         // on recupere d eventuels id et token pour les providers en ayant besoin
-        $mapProvider = $GLOBALS['wiki']->config['baz_provider'];
-        $mapProviderId = $GLOBALS['wiki']->config['baz_provider_id'];
-        $mapProviderPass = $GLOBALS['wiki']->config['baz_provider_pass'];
-        if (!empty($mapProviderId) && !empty($mapProviderPass)) {
-            if ($mapProvider == 'MapBox') {
-                $mapProviderCredentials = ', {id: \''.$mapProviderId .'\', accessToken: \''.$mapProviderPass.'\'}';
-            } else {
-                $mapProviderCredentials = ', { app_id: \''.$mapProviderId.'\', app_code: \''.$mapProviderPass.'\'}';
-            }
-        } else {
-            $mapProviderCredentials = '';
-        }
-
-        $initMapScript = '
-        $(document).ready(function() {
-            // Init leaflet map
-            var map = new L.Map(\'osmmapform\', {
-                scrollWheelZoom:'.$GLOBALS['wiki']->config['baz_wheel_zoom'].',
-                zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
-            });
-            var geocodedmarker;
-            var provider = L.tileLayer.provider("'.$mapProvider.'"'.$mapProviderCredentials.');
-            map.addLayer(provider);
-            
-            map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].');
-            
-            $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
-              var pattern = /^-?[\d]{1,3}[.][\d]+$/;
-              var thisVal = $(this).val();
-              if(!thisVal.match(pattern)) $(this).val($(this).val().replace(/[^\d.]/g,\'\'));
-            });
-            $("body").on("blur", "#bf_latitude, #bf_longitude", function() {
-                var point = L.latLng($("#bf_latitude").val(), $("#bf_longitude").val());
-                geocodedmarker.setLatLng(point);
-                map.panTo(point, {animate:true}).zoomIn();
-            });
-            var fields = ["#bf_adresse", "#bf_adresse1", "#bf_adresse2", "#bf_ville", "#bf_code_postal", "#bf_pays"]
-            fields = fields.map((id) => $(id)).filter((field) => field.length > 0)
-
-            function showAddress(map) {
-                var address = "";
-                fields.forEach((field) => address += field.val() + " ")
-                console.log("geocode address", address);
-                address = address.replace(/\\("|\'|\\)/g, " ").trim();
-                if (!address) return
-                geocodage( address, showAddressOk, showAddressError );
-                return false;
-            }
-            function showAddressOk( lon, lat )
+        $vMapProvider = $GLOBALS['wiki']->config['baz_provider'];
+        $vMapProviderId = $GLOBALS['wiki']->config['baz_provider_id'];
+        $vMapProviderPass = $GLOBALS['wiki']->config['baz_provider_pass'];
+   
+        if (!empty($vMapProviderId) && !empty($vMapProviderPass))
+        {
+            if ($vMapProvider == 'MapBox')
             {
-                //console.log("showAddressOk: "+lon+", "+lat);
-                geocodedmarkerRefresh( L.latLng( lat, lon ) );
+                $vMapProviderCredentials = '{id: \''.$vMapProviderId .'\', accessToken: \'' . $vMapProviderPass.'\'}';
             }
-        
-            function showAddressError( msg )
+            else
             {
-                //console.log("showAddressError: "+msg);
-                if ( msg == "not found" ) {
-                    alert(_t("BAZ_GEOLOC_NOT_FOUND"));
-                    geocodedmarkerRefresh( map.getCenter() );
-                } else {
-                    alert(_t(\'BAZ_MAP_ERROR\',{msg:msg}));
-                }
-            }
-            function popupHtml( point ) {
-                return `
-                    <div class="input-group" style="margin-bottom: 10px">
-                        <span class="input-group-addon">Lat</span>
-                        <input type="text" class="form-control bf_latitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lat}" />
-                        <span class="input-group-addon">Lon</span>
-                        <input type="text" class="form-control bf_longitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lng}" />
-                    </div>
-                    <div class="text-center">'._t('BAZ_ADJUST_MARKER_POSITION').'</div>
-                `
-            }
-        
-            function geocodedmarkerRefresh( point )
-            {
-                if (geocodedmarker) map.removeLayer(geocodedmarker);
-                geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup(popupHtml( geocodedmarker.getLatLng() ), {
-                    closeButton: false, 
-                    closeOnClick: false,
-                    minWidth: 300
-                }).openPopup();
-                map.setView(point, 18);
-                // map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                $(\'#bf_latitude\').val(point.lat);
-                $(\'#bf_longitude\').val(point.lng);
-        
-                geocodedmarker.on("dragend",function(ev){
-                    this.openPopup();
-                    var changedPos = ev.target.getLatLng();
-                    $(\'#bf_latitude\').val(changedPos.lat);
-                    $(\'#bf_longitude\').val(changedPos.lng);
-                    $(\'.bf_latitude\').val(changedPos.lat);
-                    $(\'.bf_longitude\').val(changedPos.lng);
-                });
-            }
-            $(\'.btn-geolocate-address\').on(\'click\', function(){showAddress(map);});
-            $(\'body\').on(\'change\', \'.bf_latitude, .bf_longitude\', function(e) {
-                if ($(this).is(":invalid")) {
-                    $(\'#bf_latitude\').val(\'\');
-                    $(\'#bf_longitude\').val(\'\');
-                    alert(_t(\'BAZ_NOT_VALID_GEOLOC_FORMAT\'));
-                } else {
-                    $(\'#bf_latitude\').val($(\'.bf_latitude\').val());
-                    $(\'#bf_longitude\').val($(\'.bf_longitude\').val());
-                    geocodedmarker.setLatLng([$(\'.bf_latitude\').val(), $(\'.bf_longitude\').val()]);
-                    map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                }
-            });';
-
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
-
-        $geoCodingScript = '';
-        if (is_array($value)) {
-            if (count($value) > 1) {
-                $geoCodingScript .= 'var point = L.latLng('.$value[$this->getLatitudeField()].', '.$value[$this->getLongitudeField()].');
-                geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                geocodedmarker.bindPopup(popupHtml( point ), {closeButton: false, closeOnClick: false});
-                geocodedmarker.on("dragend",function(ev){
-                    this.openPopup(point);
-                    var changedPos = ev.target.getLatLng();
-                    $(\'#bf_latitude\').val(changedPos.lat);
-                    $(\'#bf_longitude\').val(changedPos.lng);
-                    $(\'.bf_latitude\').val(changedPos.lat);
-                    $(\'.bf_longitude\').val(changedPos.lng);
-                });
-                ';
+                $vMapProviderCredentials = '{ app_id: \''.$vMapProviderId.'\', app_code: \''.$vMapProviderPass.'\'}';
             }
         }
-        $geoCodingScript .= '});';
+        else
+        {
+            $vMapProviderCredentials = '';
+        }
+        
+      //  $pOptions = ["form_uid" => "uid" ];
+        
+        $vGeolocationScript =
+		'document.addEventListener("DOMContentLoaded", function()' .
+		'{' .
+			'var vStreet = ' . (!empty($vAutocomplete["street"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["street"] . '\']")':'undefined') . ';' .
+			'var vStreet1 = ' . (!empty($vAutocomplete["street1"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["street1"] . '\']")':'undefined') . ';' .
+			'var vStreet2 = ' . (!empty($vAutocomplete["street1"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["street2"] . '\']")':'undefined') . ';' .
+			'var vPostalCode = ' . (!empty($vAutocomplete["postalCode"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["postalCode"] . '\']")':'undefined') . ';' .
+			'var vCity = ' . (!empty($vAutocomplete["city"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["city"] . '\']")':'undefined') . ';' .
+			'var vCounty = ' . (!empty($vAutocomplete["county"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["county"] . '\']")':'undefined') . ';' .
+			'var vState = ' . (!empty($vAutocomplete["state"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["state"] . '\']")':'undefined') . ';' .
+			'var vCountry = ' . (!empty($vAutocomplete["country"])?'$("form[uid=' . $pOptions["form_uid"] . '] input[name=\'' . $vAutocomplete["country"] . '\']")':'undefined') . ';' .
+			'var vGeolocateButton = $("form[uid=' . $pOptions["form_uid"] . '] .btn-geolocate-address");' .
+			'var vLatitude = $("form[uid=' . $pOptions["form_uid"] . '] #' . $this->latitudeField . '");' .
+			'var vLongitude = $("form[uid=' . $pOptions["form_uid"] . '] #' . $this->longitudeField . '");' .
+			'var vGeodata = $("form[uid=' . $pOptions["form_uid"] . '] #' . $this->geodataField . '");' .				
 
+			'vLatitude.val ("' . $vValue[$this->latitudeField] . '");' . 
+			'vLongitude.val ("' . $vValue[$this->longitudeField] .'");' .
+			'vGeodata.val (\'' . (!empty($vValue[$this->geodataField])?$vValue[$this->geodataField]:null) .'\');' .
+			
+			'wiki.geolocation.form' .
+			'({' . 
+				'street : vStreet,' . 
+				'street1 : vStreet1,' . 
+				'street2 : vStreet2,' .
+				'postalCode : vPostalCode,' .
+				'city : vCity,' .
+				'county : vCounty,' .
+				'state : vState,' . 
+				'country : vCountry,' .
+				'latitude : vLatitude,' .
+				'longitude : vLongitude,' .
+				'geolocate : vGeolocateButton,' .	
+				'geodata : vGeodata' .			
+			'},' .
+			'{' .
+				'toAutocomplete : "postalCode, city, county, state, country",' .
+				'render :' .
+				'{' .
+					'popup :' .
+					'{' .
+						'enabled : true,' .						
+						'options :' .
+						'{' .
+							'closeButton: false,' .
+		                	'closeOnClick: false,' .
+		                	'minWidth: 300' .
+		                '}' .
+					'},' .
+					'marker :' .
+					'{' .
+						'texts : { adjust :"' . _t('BAZ_ADJUST_MARKER_POSITION') . '"}, ' .
+						'options : ' .
+						'{' .
+							'draggable : true' .
+						'}' .
+					'},' .	
+					'mapID : "osmmapform",' .
+					'mapOptions : ' .
+					'{' .
+						'scrollWheelZoom : ' . $GLOBALS['wiki']->config['baz_wheel_zoom'] . ', ' .
+				        'zoomControl : ' . $GLOBALS['wiki']->config['baz_show_nav'] . ',' .
+						'center : [' . $GLOBALS['wiki']->config['baz_map_center_lat'] . ', ' . $GLOBALS['wiki']->config['baz_map_center_lon'] . '], ' .
+						'zoom : ' . $GLOBALS['wiki']->config['baz_map_zoom'] . ", " .
+						'provider : "' . $vMapProvider . '", ' .
+						'providerCredential : "' . $vMapProviderCredentials . '", ' .
+						'draggable : true, ' .
+						'error : function () { alert(_t("BAZ_GEOLOC_NOT_FOUND")); }' .
+					'}' .
+				'}' .
+			'})' .
+		'})';
+				
         $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
+        $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
         $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
-        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
-        $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');        
+   		$GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
+        $GLOBALS['wiki']->AddJavascriptFile('tools/geolocation/javascripts/geolocation.js');
+        $GLOBALS['wiki']->AddJavascript($vGeolocationScript);
 
         return $this->render("@bazar/inputs/map.twig", [
-            'latitude' => is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null,
-            'longitude' => is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null
+            'latitude' => is_array($vValue) && !empty($vValue[$this->getLatitudeField()]) ? $vValue[$this->getLatitudeField()] : null,
+            'longitude' => is_array($vValue) && !empty($vValue[$this->getLongitudeField()]) ? $vValue[$this->getLongitudeField()] : null,
+            'geodata'	=> is_array($vValue) && !empty($vValue[$this->geodataField])?$vValue[$this->geodataField]:null
         ]);
     }
     public function formatValuesBeforeSave($entry)
@@ -288,10 +204,14 @@ class MapField extends BazarField
                 if (isset($entry[$this->getLongitudeField()])) {
                     unset($entry[$this->getLongitudeField()]);
                 }
+                if (isset($entry[$this->geodataField])) {
+                    unset($entry[$this->geodataField]);
+                }
             } else {
                 $entry[$this->getPropertyName()] = $values;
                 $entry[$this->getLatitudeField()] = $values[$this->getLatitudeField()];
                 $entry[$this->getLongitudeField()] = $values[$this->getLatitudeField()];
+                $entry[$this->geodataField] = $values[$this->geodataField];
             }
         }
         if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
@@ -303,6 +223,7 @@ class MapField extends BazarField
             $this->getPropertyName() => $entry[$this->getPropertyName()],
             $this->getLatitudeField() => $entry[$this->getLatitudeField()],
             $this->getLongitudeField() => $entry[$this->getLongitudeField()],
+            $this->geodataField => $entry[$this->geodataField],
             'fields-to-remove' => ['carte_google']
           ];
         } else {
@@ -311,6 +232,7 @@ class MapField extends BazarField
             $this->getPropertyName(),
             $this->getLatitudeField(),
             $this->getLongitudeField(),
+            $this->geodataField,
             'carte_google'
             ]
         ];
@@ -339,8 +261,6 @@ class MapField extends BazarField
         return $this->autocomplete;
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
-    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return array_merge(

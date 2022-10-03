@@ -319,8 +319,11 @@ var typeUserAttrs = {
   map: {
     name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: "bf_latitude" },
     name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: "bf_longitude" },
-    autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },
-    autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWNE_PLACEHOLDER') },
+    autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },    
+    autocomplete_city: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_CITY'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_CITY_PLACEHOLDER') },
+    autocomplete_county: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY_PLACEHOLDER') },
+	autocomplete_state: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STATE'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STATE_PLACEHOLDER') },
+    autocomplete_country: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTRY'), value: "" , placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTRY_PLACEHOLDER') },
   },
   date: {
     today_button: {
@@ -724,10 +727,12 @@ var yesWikiMapping = {
     0: "type",
     1: "name_latitude",
     2: "name_longitude",
-    3: "",
     4: "autocomplete_postalcode",
-    5: "autocomplete_town",
-    8: "required"
+    5: "autocomplete_city",
+    6: "autocomplete_county",
+    7: "autocomplete_state",
+    8: "required",
+    9: "autocomplete_country"
   },
   date: { ...defaultMapping, ...{ 5: "today_button" } },
   image: {

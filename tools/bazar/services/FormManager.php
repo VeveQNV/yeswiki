@@ -60,8 +60,9 @@ class FormManager
             $form[$key] = _convert($value, 'ISO-8859-15');
         }
 
-        $form['template'] = $this->parseTemplate($form['bn_template']);
+	    $form['template'] = $this->parseTemplate($form['bn_template']);
         $form['prepared'] = $this->prepareData($form);
+		$form["uid"] = "form_" . (rand ()); // form universal identifier used to avoid conflicts in form's input selection (corrects bug in MapField's autocompletion mechanism)
 
         $this->cachedForms[$formId] = $form;
 
@@ -264,6 +265,7 @@ class FormManager
         $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
+        
             $classField = $this->fieldFactory->create($field);
 
             if ($classField) {
@@ -287,31 +289,29 @@ class FormManager
         $facetteValue = $fields = [];
 
         foreach ($entries as $entry) {
+        
             $form = $this->getOne($entry['id_typeannonce']);
 
             // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-            if (!isset($fields[$entry['id_typeannonce']])) {
-                $fields[$entry['id_typeannonce']] = (empty($form['prepared']))
-                    ? []
-                    : $this->filterFieldsByPropertyName($form['prepared'], $groups);
-            }
+            $fields[$entry['id_typeannonce']] = isset($fields[$entry['id_typeannonce']])
+                ? $fields[$entry['id_typeannonce']]
+                : (
+                    !empty($form['prepared'])
+                    ? $this->filterFieldsByPropertyName($form['prepared'], $groups)
+                    : []
+                );
 
-            foreach ($entry as $key => $value) {
+            foreach ($entry as $key => $value) {           
                 $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
 
                 if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
-                    if (in_array($key, ['id_typeannonce','owner'])) {
-                        $fieldPropName = $key;
-                        $field = null;
-                    } else {
-                        $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
-                        $field = array_pop($filteredFields);
+                    $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
+                    $field = array_pop($filteredFields);
 
-                        $fieldPropName = null;
-                        if ($field instanceof BazarField) {
-                            $fieldPropName = $field->getPropertyName();
-                            $fieldType = $field->getType();
-                        }
+                    $fieldPropName = null;
+                    if ($field instanceof BazarField) {
+                        $fieldPropName = $field->getPropertyName();
+                        $fieldType = $field->getType();
                     }
 
                     if ($fieldPropName) {
@@ -347,21 +347,7 @@ class FormManager
                 }
             }
         }
-
-        // remove `id_typeannonce` if only one form
-        if (isset($facetteValue['id_typeannonce'])) {
-            $nbForms = count(
-                array_filter(
-                    array_keys($facetteValue['id_typeannonce']),
-                    function ($key) {
-                        return !in_array($key, ['type','source']);
-                    }
-                )
-            );
-            if ($nbForms < 2) {
-                unset($facetteValue['id_typeannonce']);
-            }
-        }
+                    	
         return $facetteValue;
     }
 
@@ -376,13 +362,12 @@ class FormManager
                     return true;
                 }
             });
-        } else {
+        } else
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof BazarField) {
                     return $id[0] === 'all' || in_array($field->getPropertyName(), $id);
                 }
             });
-        }
     }
 
     /**

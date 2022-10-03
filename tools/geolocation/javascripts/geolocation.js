@@ -1723,7 +1723,7 @@ $.extend (true, wiki,
 				
 				var vGeometry = wiki.geolocation.getGeometry (vPlace);
 				
-				if (vGeometry)
+				if (vGeometry && vGeometry.type !== "Point")
 				{
 					var vGeoJSON = L.geoJSON(vGeometry);
 					

@@ -82,14 +82,14 @@ abstract class BazarField implements \JsonSerializable
     }
 
     // Render the edit view of the field. Check ACLS first
-    public function renderInputIfPermitted($entry)
+    public function renderInputIfPermitted($entry, $pOptions = null)
     {
         // Safety checks, must be run before every renderInput
         if (!$this->canEdit($entry, !$entry)) {
             return '';
         }
 
-        return $this->renderInput($entry);
+        return $this->renderInput($entry, $pOptions);
     }
 
     public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
@@ -118,7 +118,7 @@ abstract class BazarField implements \JsonSerializable
     // each field should implement this method instead of the renderInputIfPermitted
     // so we are sure same safety checks are done for all fields
     protected function renderInput($entry)
-    {
+    {    
         return $this->render("@bazar/inputs/{$this->type}.twig", [
             'value' => $this->getValue($entry)
         ]);
@@ -134,7 +134,9 @@ abstract class BazarField implements \JsonSerializable
     protected function getValue($entry)
     {
         // TODO see if it is necessary to look for $_REQUEST
-        return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+        // Yes it is very usefull to pre-fill a form - yves
+               
+        return $entry[$this->propertyName] ?? (isset ($_REQUEST[$this->propertyName])?($_REQUEST[$this->propertyName]):null) ?? $this->default;
     }
 
     // HELPERS
